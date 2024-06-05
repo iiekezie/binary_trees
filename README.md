@@ -256,4 +256,4 @@ Function Prototypes
 
 ## Authors :black_nib:
 
-* __Ifeanyi I Ekezie__ <[bdbaraban](https://github.com/iiekezie)>
+* __Ifeanyi I Ekezie__ <[iiekezie](https://github.com/iiekezie)>
