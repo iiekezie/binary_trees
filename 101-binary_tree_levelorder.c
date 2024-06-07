@@ -1,64 +1,113 @@
-#include "queue.h"
-#include <stdlib.h>
+#include "binary_trees.h"
 
 /**
- * create_queue_node - Creates a new queue node
- * @node: A pointer to a binary tree node
- *
- * Return: A pointer to the newly created queue node
+ * struct node_s - singly linked list
+ * @node: const binary tree node
+ * @next: points to the next node
  */
-QueueNode *create_queue_node(const binary_tree_t *node)
+typedef struct node_s
 {
-    QueueNode *new_node = malloc(sizeof(QueueNode));
-    if (new_node == NULL)
-        return NULL;
-    new_node->node = node;
-    new_node->next = NULL;
-    return new_node;
+	const binary_tree_t *node;
+	struct node_s *next;
+} ll;
+
+ll *append(ll *head, const binary_tree_t *btnode);
+void free_list(ll *head);
+ll *get_children(ll *head, const binary_tree_t *parent);
+void levels_rec(ll *head, void (*func)(int));
+
+/**
+ * binary_tree_levelorder - Goes through a binary tree
+ *                          using level-order traversal.
+ * @tree: Pointer to the root node of the tree to traverse.
+ * @func: Pointer to a function to call for each node.
+ */
+void binary_tree_levelorder(const binary_tree_t *tree, void (*func)(int))
+{
+	ll *children = NULL;
+
+	func(tree->n);
+	children = get_children(children, tree);
+	levels_rec(children, func);
+
+	free_list(children);
 }
 
 /**
- * enqueue - Adds a node to the rear of the queue
- * @queue: A double pointer to the queue
- * @node: A pointer to the binary tree node to be enqueued
+ * levels_rec - Calls func on all nodes at each level.
+ * @head: Pointer to head of linked list with nodes at one level.
+ * @func: Pointer to a function to call for each node.
  */
-void enqueue(Queue **queue, const binary_tree_t *node)
+void levels_rec(ll *head, void (*func)(int))
 {
-    QueueNode *new_node = create_queue_node(node);
-    if (new_node == NULL)
-        return;
-    if (*queue == NULL)
-    {
-        *queue = malloc(sizeof(Queue));
-        if (*queue == NULL)
-        {
-            free(new_node);
-            return;
-        }
-        (*queue)->front = (*queue)->rear = new_node;
-    }
-    else
-    {
-        (*queue)->rear->next = new_node;
-        (*queue)->rear = new_node;
-    }
+	ll *children = NULL, *curr = NULL;
+
+	if (!head)
+		return;
+	for (curr = head; curr != NULL; curr = curr->next)
+	{
+		func(curr->node->n);
+		children = get_children(children, curr->node);
+	}
+	levels_rec(children, func);
+	free_list(children);
 }
 
 /**
- * dequeue - Removes a node from the front of the queue
- * @queue: A double pointer to the queue
- *
- * Return: A pointer to the binary tree node dequeued from the queue
+ * get_children - appends children of parent to linked list.
+ * @head: Pointer to head of linked list where children will be appended.
+ * @parent: Pointer to node whose children we want to append.
+ * Return: Pointer to head of linked list of children.
  */
-const binary_tree_t *dequeue(Queue **queue)
+ll *get_children(ll *head, const binary_tree_t *parent)
 {
-    if (*queue == NULL || (*queue)->front == NULL)
-        return NULL;
-    QueueNode *temp = (*queue)->front;
-    const binary_tree_t *node = temp->node;
-    (*queue)->front = (*queue)->front->next;
-    free(temp);
-    if ((*queue)->front == NULL)
-        (*queue)->rear = NULL;
-    return node;
+	if (parent->left)
+		head = append(head, parent->left);
+	if (parent->right)
+		head = append(head, parent->right);
+	return (head);
+}
+
+/**
+ * append - adds a new node at the end of a linkedlist
+ * @head: pointer to head of linked list
+ * @btnode: const binary tree node to append
+ * Return: pointer to head, or NULL on failure
+ */
+ll *append(ll *head, const binary_tree_t *btnode)
+{
+	ll *new = NULL, *last = NULL;
+
+	new = malloc(sizeof(*new));
+	if (new)
+	{
+		new->node = btnode;
+		new->next = NULL;
+		if (!head)
+			head = new;
+		else
+		{
+			last = head;
+			while (last->next)
+				last = last->next;
+			last->next = new;
+		}
+	}
+	return (head);
+}
+
+/**
+ * free_list - frees all the nodes in a linked list
+ * @head: pointer to the head of list_t linked list
+ */
+void free_list(ll *head)
+{
+	ll *ptr = NULL;
+
+	while (head)
+	{
+		ptr = head->next;
+		free(head);
+		head = ptr;
+	}
 }
